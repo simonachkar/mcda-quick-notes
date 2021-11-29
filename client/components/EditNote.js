@@ -1,23 +1,25 @@
 
 import axios from "axios"
+import { useState, useContext } from "react"
+
+import NoteContext from '../context'
 
 const EditNote = ({ note }) => {
-    const { title, content } = note
+    const { editedNote, setEditedNote, refreshData } = useContext(NoteContext)
+    const [content, changeContent] = useState(note.content)
+    const [title, changeTitle] = useState(note.title)
 
-    /**
-     * This function is INCOMPLETE, I just included some helper code for you.
-     * axios is a library used to do http request
-     * Here, I'm doing an POST request to the api to save the note
-     * When the data is changed you should update the data on the notes page
-     */
-    const saveNote = () => {
-        axios.post('http://localhost:3001/save-note',
-            {
-                id: editedNote.id, content, title
-            })
+    const saveNote = async () => {
+        axios.post('http://localhost:3001/save-note', {
+            id: editedNote.id, content, title
+        })
             .then(() => {
-                // TODO: Fetch new data
-                // TODO: And update a "global" state with the new data 
+                setEditedNote(null)
+
+                // Fetch new data
+                fetch('http://localhost:3001/get-notes')
+                    .then(res => res.json())
+                    .then(data => refreshData(data))
             })
             .catch(error => {
                 console.log(error);
@@ -29,19 +31,23 @@ const EditNote = ({ note }) => {
             <input
                 value={title}
                 className=" mt-4 block w-[40rem] pt-4 pb-4 pl-6 pr-6 mb-8 border-2"
+                onChange={(e) => changeTitle(e.target.value)}
             />
             <textarea
                 value={content}
                 className="form-textarea mt-1 block w-[40rem] pt-4 pb-4 pl-6 pr-6  mb-8 border-2"
                 rows="3"
+                onChange={(e) => changeContent(e.target.value)}
             />
             <button
                 className="rounded-lg px-4 py-2 bg-primary"
+                onClick={() => saveNote()}
             >
                 Save
             </button>
             <button
                 className="rounded-lg px-4 py-2 bg-gray-300 ml-5"
+                onClick={() => setEditedNote(null)}
             >
                 Close
             </button>
